@@ -1,0 +1,23 @@
+<Publication_MarketDocument>
+  <TimeSeries>
+    <MktPSRType>
+      <psrType>A04</psrType>
+    </MktPSRType>
+    <Period>
+      <timeInterval>
+        <start>2024-01-01T00:00Z</start>
+        <end>2024-01-01T23:45Z</end>
+      </timeInterval>
+      <resolution>PT15M</resolution>
+      <Point>
+        <position>1</position>
+        <price.amount>72.35</price.amount>
+      </Point>
+      <Point>
+        <position>2</position>
+        <price.amount>71.50</price.amount>
+      </Point>
+      <!-- Add more if needed -->
+    </Period>
+  </TimeSeries>
+</Publication_MarketDocument>
