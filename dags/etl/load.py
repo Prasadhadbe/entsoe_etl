@@ -1,18 +1,21 @@
 import os
 import psycopg2
 from dotenv import load_dotenv
+from airflow.decorators import task
 
 load_dotenv()
 
-def load_to_postgres(**kwargs):
+def load_to_postgres(start_date= None,end_date = None,**kwargs):
     ti = kwargs["ti"]
-    data = ti.xcom_pull(task_ids="transform_data")  # <- Use default 'return_value' key
+
+    transform_task_id = kwargs.get("transform_task_id","transform_data")
+    data = ti.xcom_pull(task_ids=transform_task_id)  # <- Use default 'return_value' key
 
     if not data:
-        print("🚨 No data received from transform_data task!")
+        print(f"🚨 No data received from transform_data task for {start_date} to {end_date}!")
         return
 
-    print(f"📦 Loading {len(data)} rows into Postgres...")
+    print(f"📦 Loading {len(data)} rows into Postgres from {start_date} to {end_date}...")
 
     conn = psycopg2.connect(
         host=os.getenv("POSTGRES_HOST", "postgres"),
