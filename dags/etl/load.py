@@ -6,7 +6,13 @@ load_dotenv()
 
 def load_to_postgres(**kwargs):
     ti = kwargs["ti"]
-    data = ti.xcom_pull(task_ids="transform_data", key="transformed_data")
+    data = ti.xcom_pull(task_ids="transform_data")  # <- Use default 'return_value' key
+
+    if not data:
+        print("🚨 No data received from transform_data task!")
+        return
+
+    print(f"📦 Loading {len(data)} rows into Postgres...")
 
     conn = psycopg2.connect(
         host=os.getenv("POSTGRES_HOST", "postgres"),
@@ -37,3 +43,4 @@ def load_to_postgres(**kwargs):
     conn.commit()
     cursor.close()
     conn.close()
+    print("✅ Data load complete.")
