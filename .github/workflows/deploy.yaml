@@ -9,7 +9,7 @@ env:
   ACR_NAME: airflowacr123
   RESOURCE_GROUP: airflow-etl-rg
   CLUSTER_NAME: airflow-aks-cluster
-  CONTAINER_IMAGE: ${{ env.ACR_NAME }}.azurecr.io/airflow:latest
+  CONTAINER_IMAGE: airflowacr123.azurecr.io/airflow:latest
 
 jobs:
   build-and-push:
