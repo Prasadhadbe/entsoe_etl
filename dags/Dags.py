@@ -3,7 +3,7 @@ from airflow.operators.python import PythonOperator
 from datetime import datetime, timedelta
 from etl.extract import extract_data
 from etl.transform import transform_data
-from etl.load import load_to_postgres
+from etl.load import load_to_postgres, load_wrapper
 from airflow.decorators import task
 from util.utils import get_weekly_chunks
 from airflow.decorators import task
@@ -29,6 +29,7 @@ next_date = current_date + timedelta(days=1)
 @task
 def generate_chunks():
     chunks = get_weekly_chunks("2024-01-01", datetime.today().strftime("%Y-%m-%d"))
+    # return [{"start_date": "2024-01-01", "end_date": "2024-01-08"}] (for testing)
     return [{"start_date": c["start_date"], "end_date": c["end_date"]} for c in chunks]
 
 @task
@@ -57,7 +58,16 @@ def transform_daily():
         raise ValueError(f"Expected XML string but got: {type(raw_xml)}")
 
     print(f"📥 Raw XML received (preview):\n{raw_xml[:500]}...")
-    return transform_data(raw_xml)
+
+    # Transform the XML into structured data
+    transformed_data = transform_data(raw_xml)
+
+    # Convert datetime objects to ISO strings (for XCom compatibility)
+    for row in transformed_data:
+        if isinstance(row.get("timestamp"), datetime):
+            row["timestamp"] = row["timestamp"].isoformat()
+
+    return transformed_data
 
 
 # @task
@@ -94,18 +104,14 @@ def transform_daily():
 
 #     return transformed_data
 
-@task
-def load_wrapper(chunk):
-    return load_to_postgres(start_date=chunk["start_date"], end_date=chunk["end_date"])
+# @task
+# def load_wrapper(chunk):
+#     return load_to_postgres(start_date=chunk["start_date"], end_date=chunk["end_date"])
+
 
 # @task
 # def load_to_postgres(chunk):
 #     return
-
-
-
-
-
 
 
 
@@ -115,7 +121,7 @@ with DAG(
     default_args=default_args,
     start_date=datetime(2024,1,1),
     schedule_interval="@daily",
-    catchup=True,
+    catchup=False,
 ) as dag:
     
     extract_task = PythonOperator(
@@ -138,7 +144,7 @@ with DAG(
         task_id="load_to_postgres",
         python_callable=load_to_postgres,
         op_kwargs={
-            "transform_task_id": "transform_data",
+            "transform_task_id": "transform_daily",
             "start_date": "{{ ds }}",
             "end_date": "{{ next_ds }}"
         }
@@ -154,13 +160,11 @@ with DAG(
     catchup=False,
     start_date=datetime(2024, 1, 1),
 ) as dag:
-    
     # Generate chunks for dynamic mapping
     chunks = generate_chunks()
-    
     # Task flow with explicit names
     extract = extract_wrapper.expand(chunk=chunks)
     transform = transform_wrapper.expand(chunk=chunks, raw_xml=extract)
-    load = load_wrapper.expand(chunk=chunks)
+    load = load_wrapper.expand(chunk=chunks, data= transform)
     
     extract >> transform >> load
