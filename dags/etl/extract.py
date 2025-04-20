@@ -99,3 +99,7 @@ def extract_data(start_date: Optional[str] = None, end_date: Optional[str] = Non
     except Exception as e:
         logging.error(f"Extraction failed: {str(e)}")
         raise
+
+
+# test_chunk = {"start_date": '2024-01-01', 'end_date': '2024-01-08'}
+# extract_data(**test_chunk)
