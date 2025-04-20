@@ -6,9 +6,9 @@ on:
       - main
 
 env:
-  ACR_NAME: <your-acr-name>
-  RESOURCE_GROUP: <your-resource-group>
-  CLUSTER_NAME: <your-aks-cluster-name>
+  ACR_NAME: airflowacr123
+  RESOURCE_GROUP: airflow-etl-rg
+  CLUSTER_NAME: airflow-aks-cluster
   CONTAINER_IMAGE: ${{ env.ACR_NAME }}.azurecr.io/airflow:latest
 
 jobs:
