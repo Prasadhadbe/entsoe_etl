@@ -1,0 +1,23 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: airflow-init
+  namespace: airflow
+spec:
+  template:
+    spec:
+      containers:
+        - name: init
+          image: airflowacr123.azurecr.io/airflow:latest
+          command:
+            [
+              "bash",
+              "-c",
+              "airflow db upgrade && airflow users create --username admin --password admin --firstname Admin --lastname User --role Admin --email admin@example.com",
+            ]
+          envFrom:
+            - configMapRef:
+                name: airflow-config
+            - secretRef:
+                name: airflow-secrets
+      restartPolicy: OnFailure

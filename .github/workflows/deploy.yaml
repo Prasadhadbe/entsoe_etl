@@ -1,0 +1,63 @@
+name: Deploy Airflow to AKS
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  ACR_NAME: <your-acr-name>
+  RESOURCE_GROUP: <your-resource-group>
+  CLUSTER_NAME: <your-aks-cluster-name>
+  CONTAINER_IMAGE: ${{ env.ACR_NAME }}.azurecr.io/airflow:latest
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Azure Container Registry Login
+        run: az acr login --name $ACR_NAME
+
+      - name: Build Docker Image
+        run: |
+          docker build -t $CONTAINER_IMAGE .
+
+      - name: Push Docker Image
+        run: |
+          docker push $CONTAINER_IMAGE
+
+  deploy-to-aks:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Set AKS Context
+        uses: azure/aks-set-context@v3
+        with:
+          resource-group: ${{ env.RESOURCE_GROUP }}
+          cluster-name: ${{ env.CLUSTER_NAME }}
+
+      - name: Apply K8s Manifests
+        run: |
+          sed -i "s|<ACR_NAME>|${{ env.ACR_NAME }}|g" k8s/*.yaml
+          kubectl apply -f k8s/
+
+      - name: Wait for Webserver
+        run: |
+          kubectl rollout status deployment/airflow-web -n airflow
+          kubectl get svc airflow-web -n airflow

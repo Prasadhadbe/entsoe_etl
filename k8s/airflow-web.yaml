@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: airflow-web
+  namespace: airflow
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: web
+  template:
+    metadata:
+      labels:
+        component: web
+    spec:
+      containers:
+        - name: web
+          image: airflowacr123.azurecr.io/airflow:latest
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: airflow-config
+            - secretRef:
+                name: airflow-secrets
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: airflow-web
+  namespace: airflow
+spec:
+  type: LoadBalancer
+  selector:
+    component: web
+  ports:
+    - port: 80
+      targetPort: 8080
