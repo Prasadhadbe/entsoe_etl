@@ -54,6 +54,18 @@ jobs:
         run: |
           kubectl apply -f k8s/
 
+      - name: Wait for airflow-init job to complete
+        run: |
+          echo "⏳ Waiting for airflow-init job to complete..."
+          if ! kubectl wait --for=condition=complete job/airflow-init -n airflow --timeout=180s; then
+            echo "❌ airflow-init job failed or took too long."
+            kubectl get pods -n airflow
+            kubectl describe pod -l job-name=airflow-init -n airflow
+            kubectl logs -n airflow -l job-name=airflow-init --tail=50
+            exit 1
+          fi
+          echo "✅ airflow-init job completed successfully."
+
       - name: Wait for Airflow Webserver Pod
         run: |
           echo "Waiting for webserver pod to be ready..."
