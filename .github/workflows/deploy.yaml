@@ -3,12 +3,12 @@ name: Deploy to Azure AKS
 on:
   push:
     branches:
-      - main # adjust as needed
+      - main
 
 env:
-  ACR_NAME: airflowacr26970 # e.g. myacr
-  AKS_RESOURCE_GROUP: airflow-rg # e.g. my-rg
-  AKS_CLUSTER_NAME: airflow-aks # e.g. airflow-cluster
+  ACR_NAME: airflowacr26970
+  AKS_RESOURCE_GROUP: airflow-rg
+  AKS_CLUSTER_NAME: airflow-aks
   IMAGE_NAME: airflow
   IMAGE_TAG: latest
 
@@ -40,8 +40,7 @@ jobs:
 
       - name: Replace image tag in deployments
         run: |
-          sed -i "s|$ACR_NAME.azurecr.io/airflow:.*|$ACR_NAME.azurecr.io/$IMAGE_NAME:$IMAGE_TAG|g" k8s/airflow-*-deployment.yaml
-          sed -i "s|$ACR_NAME.azurecr.io/airflow:.*|$ACR_NAME.azurecr.io/$IMAGE_NAME:$IMAGE_TAG|g" k8s/airflow-init-job.yaml
+          find k8s -name "*.yaml" -exec sed -i "s|$ACR_NAME.azurecr.io/airflow:.*|$ACR_NAME.azurecr.io/$IMAGE_NAME:$IMAGE_TAG|g" {} \;
 
       - name: Apply Kubernetes Manifests
         run: |
@@ -66,6 +65,6 @@ jobs:
         run: |
           kubectl cp ./plugins ${{ steps.get-pod.outputs.pod_name }}:/opt/airflow/ -c webserver
 
-      - name: Restart Airflow Scheduler (optional)
+      - name: Restart Airflow Scheduler
         run: |
           kubectl rollout restart deployment airflow-scheduler
