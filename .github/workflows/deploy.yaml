@@ -44,7 +44,13 @@ jobs:
           sed -i "s|$ACR_NAME.azurecr.io/airflow:.*|$ACR_NAME.azurecr.io/$IMAGE_NAME:$IMAGE_TAG|g" k8s/airflow-scheduler-deployment.yaml
           sed -i "s|$ACR_NAME.azurecr.io/airflow:.*|$ACR_NAME.azurecr.io/$IMAGE_NAME:$IMAGE_TAG|g" k8s/airflow-init-job.yaml
 
-      - name: Apply Kubernetes Manifests
+      - name: Apply Namespace first
+        run: |
+          kubectl apply -f k8s/namespace.yaml
+          echo "Waiting 5 seconds for namespace to be registered..."
+          sleep 5
+
+      - name: Apply rest of manifests
         run: |
           kubectl apply -f k8s/
 
