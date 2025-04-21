@@ -9,7 +9,7 @@ on:
 
 env:
   ACR_NAME: airflowacr26970
-  AKS_RESOURCE_GROUP: MC_airflow-rg_airflow-aks_centralindia
+  AKS_RESOURCE_GROUP: airflow-rg
   AKS_CLUSTER_NAME: airflow-aks
   IMAGE_NAME: airflow
   IMAGE_TAG: latest
@@ -23,7 +23,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
       - name: Log in to Azure
         uses: azure/login@v1
         with:
