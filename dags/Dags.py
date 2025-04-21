@@ -26,9 +26,9 @@ next_date = current_date + timedelta(days=1)
 
 @task
 def generate_chunks():
-    chunks = get_weekly_chunks("2024-01-01", datetime.today().strftime("%Y-%m-%d")) # for prod
+    chunks = get_weekly_chunks("2024-01-01", datetime.today().strftime("%Y-%m-%d")) # prod 
     # return [{"start_date": "2024-01-01", "end_date": "2024-01-08"}] #(for testing)
-    return [{"start_date": c["start_date"], "end_date": c["end_date"]} for c in chunks] # for prod
+    return [{"start_date": c["start_date"], "end_date": c["end_date"]} for c in chunks] # prod
 
 @task
 def extract_wrapper(chunk):
