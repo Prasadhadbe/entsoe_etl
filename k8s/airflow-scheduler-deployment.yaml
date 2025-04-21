@@ -30,3 +30,9 @@ spec:
         - name: plugins-volume
           persistentVolumeClaim:
             claimName: airflow-dags-pvc
+        - name: secrets-store-inline # This defines the volume
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: "airflow-secrets"
