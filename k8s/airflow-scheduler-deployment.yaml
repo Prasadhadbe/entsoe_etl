@@ -16,7 +16,7 @@ spec:
       containers:
         - name: scheduler
           image: airflowacrcluster.azurecr.io/airflow:latest
-          command: ["scheduler"]
+          command: ["airflow", "scheduler"]
           envFrom:
             - secretRef:
                 name: airflow-secrets
