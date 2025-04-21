@@ -9,10 +9,9 @@ spec:
       containers:
         - name: init
           image: airflowacr26970.azurecr.io/airflow:latest
-          volumeMounts:
-            - name: secrets-store-inline
-              mountPath: "/mnt/secrets"
-              readOnly: true
+          envFrom:
+            - secretRef:
+              mountPath: airflow-secrets
           command:
             - bash
             - -c
