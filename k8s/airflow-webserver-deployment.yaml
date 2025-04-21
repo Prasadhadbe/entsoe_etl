@@ -23,6 +23,8 @@ spec:
               mountPath: /opt/airflow/dags
             - name: plugins-volume
               mountPath: /opt/airflow/plugins
+            - name: secrets-store-inline
+              mountPath: /etc/secrets-store
       volumes:
         - name: dags-volume
           persistentVolumeClaim:
