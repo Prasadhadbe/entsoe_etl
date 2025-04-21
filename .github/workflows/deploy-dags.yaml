@@ -8,6 +8,13 @@ on:
       - "dags/**" # Only run when files in 'dags/' are changed
       - ".github/workflows/deploy-dags.yml"
 
+env:
+  ACR_NAME: airflowacr26970
+  AKS_RESOURCE_GROUP: MC_airflow-rg_airflow-aks_centralindia
+  AKS_CLUSTER_NAME: airflow-aks
+  IMAGE_NAME: airflow
+  IMAGE_TAG: latest
+
 jobs:
   deploy:
     name: Upload DAGs to Azure File Share
