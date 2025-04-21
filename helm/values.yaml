@@ -1,0 +1,23 @@
+# airflow-values.yaml
+airflow:
+  config:
+    # Load sensitive values from the secret
+    AIRFLOW__CORE__SQL_ALCHEMY_CONN: "$(POSTGRES_URL)" # Uses the secret's POSTGRES_URL
+    AIRFLOW__WEBSERVER__SECRET_KEY: "$(AIRFLOW_SECRET_KEY)" # From secret
+
+  # Load all variables from the secret as env vars
+  envFrom:
+    - secretRef:
+        name: airflow-secrets
+
+  # Optional: Explicitly map specific secrets (alternative to envFrom)
+  # env:
+  #   - name: AIRFLOW__CORE__SQL_ALCHEMY_CONN
+  #     valueFrom:
+  #       secretKeyRef:
+  #         name: airflow-secrets
+  #         key: POSTGRES_URL
+
+# Disable built-in PostgreSQL (using external Azure PostgreSQL)
+postgresql:
+  enabled: false
