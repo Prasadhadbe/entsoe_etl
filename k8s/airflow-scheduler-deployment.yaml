@@ -18,7 +18,7 @@ spec:
           command: ["scheduler"]
           envFrom:
             - secretRef:
-              name: airflow-secrets
+                name: airflow-secrets
           volumeMounts:
             - name: dags-volume
               mountPath: /opt/airflow/dags
