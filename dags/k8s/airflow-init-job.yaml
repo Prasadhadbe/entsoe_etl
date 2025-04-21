@@ -1,0 +1,32 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: airflow-init
+  namespace: airflow
+spec:
+  template:
+    spec:
+      containers:
+        - name: init
+          image: <ACR_NAME>.azurecr.io/airflow-custom:latest
+          volumeMounts:
+            - name: secrets-store-inline
+              mountPath: "/mnt/secrets"
+              readOnly: true
+          command:
+            - bash
+            - -c
+            - >
+              export AIRFLOW__CORE__SQL_ALCHEMY_CONN=$(cat /mnt/secrets/POSTGRES-URL) &&
+              export AIRFLOW__WEBSERVER__SECRET_KEY=$(cat /mnt/secrets/AIRFLOW-SECRET-KEY) &&
+              export ENTSOE_API_KEY=$(cat /mnt/secrets/ENTSOE-API-KEY) &&
+              airflow db init &&
+              airflow users create --username admin --password admin --firstname Air --lastname Flow --role Admin --email admin@example.com
+      restartPolicy: Never
+      volumes:
+        - name: secrets-store-inline
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: "airflow-secrets"

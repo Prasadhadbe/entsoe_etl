@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: airflow-scheduler
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: airflow-scheduler
+  template:
+    metadata:
+      labels:
+        app: airflow-scheduler
+    spec:
+      containers:
+        - name: scheduler
+          image: airflowacr26970.azurecr.io/airflow:latest
+          command: ["scheduler"]
+          volumeMounts:
+            - name: dags-volume
+              mountPath: /opt/airflow/dags
+            - name: plugins-volume
+              mountPath: /opt/airflow/plugins
+      volumes:
+        - name: dags-volume
+          persistentVolumeClaim:
+            claimName: airflow-dags-pvc
+        - name: plugins-volume
+          persistentVolumeClaim:
+            claimName: airflow-dags-pvc

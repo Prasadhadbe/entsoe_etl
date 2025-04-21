@@ -1,63 +1,71 @@
-name: Deploy Airflow to AKS
+name: Deploy to Azure AKS
 
 on:
   push:
     branches:
-      - main
+      - main # adjust as needed
 
 env:
-  ACR_NAME: airflowacr123
-  RESOURCE_GROUP: airflow-etl-rg
-  CLUSTER_NAME: airflow-aks-cluster
-  CONTAINER_IMAGE: ${{ env.ACR_NAME }}.azurecr.io/airflow:latest
+  ACR_NAME: airflowacr26970 # e.g. myacr
+  AKS_RESOURCE_GROUP: airflow-rg # e.g. my-rg
+  AKS_CLUSTER_NAME: airflow-aks # e.g. airflow-cluster
+  IMAGE_NAME: airflow
+  IMAGE_TAG: latest
 
 jobs:
-  build-and-push:
+  deploy:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Azure Login
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      - name: Azure Container Registry Login
-        run: az acr login --name $ACR_NAME
-
-      - name: Build Docker Image
-        run: |
-          docker build -t $CONTAINER_IMAGE .
-
-      - name: Push Docker Image
-        run: |
-          docker push $CONTAINER_IMAGE
-
-  deploy-to-aks:
-    needs: build-and-push
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Azure Login
+      - name: Log in to Azure
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Set AKS Context
-        uses: azure/aks-set-context@v3
-        with:
-          resource-group: ${{ env.RESOURCE_GROUP }}
-          cluster-name: ${{ env.CLUSTER_NAME }}
-
-      - name: Apply K8s Manifests
         run: |
-          sed -i "s|<ACR_NAME>|${{ env.ACR_NAME }}|g" k8s/*.yaml
+          az aks get-credentials --resource-group $AKS_RESOURCE_GROUP --name $AKS_CLUSTER_NAME --overwrite-existing
+
+      - name: Log in to ACR
+        run: |
+          az acr login --name $ACR_NAME
+
+      - name: Build and Push Docker Image
+        run: |
+          docker build -t $ACR_NAME.azurecr.io/$IMAGE_NAME:$IMAGE_TAG -f Dockerfile .
+          docker push $ACR_NAME.azurecr.io/$IMAGE_NAME:$IMAGE_TAG
+
+      - name: Replace image tag in deployments
+        run: |
+          sed -i "s|$ACR_NAME.azurecr.io/airflow:.*|$ACR_NAME.azurecr.io/$IMAGE_NAME:$IMAGE_TAG|g" k8s/airflow-*-deployment.yaml
+          sed -i "s|$ACR_NAME.azurecr.io/airflow:.*|$ACR_NAME.azurecr.io/$IMAGE_NAME:$IMAGE_TAG|g" k8s/airflow-init-job.yaml
+
+      - name: Apply Kubernetes Manifests
+        run: |
           kubectl apply -f k8s/
 
-      - name: Wait for Webserver
+      - name: Wait for Airflow Webserver Pod
         run: |
-          kubectl rollout status deployment/airflow-web -n airflow
-          kubectl get svc airflow-web -n airflow
+          echo "Waiting for webserver pod to be ready..."
+          kubectl wait --for=condition=Ready pod -l app=airflow-webserver --timeout=300s
+
+      - name: Get Webserver Pod Name
+        id: get-pod
+        run: |
+          POD_NAME=$(kubectl get pods -l app=airflow-webserver -o jsonpath="{.items[0].metadata.name}")
+          echo "pod_name=$POD_NAME" >> $GITHUB_OUTPUT
+
+      - name: Copy DAGs to Pod
+        run: |
+          kubectl cp ./dags ${{ steps.get-pod.outputs.pod_name }}:/opt/airflow/ -c webserver
+
+      - name: Copy Plugins to Pod
+        run: |
+          kubectl cp ./plugins ${{ steps.get-pod.outputs.pod_name }}:/opt/airflow/ -c webserver
+
+      - name: Restart Airflow Scheduler (optional)
+        run: |
+          kubectl rollout restart deployment airflow-scheduler
