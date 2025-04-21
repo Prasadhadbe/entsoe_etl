@@ -8,7 +8,7 @@ spec:
     spec:
       containers:
         - name: init
-          image: <ACR_NAME>.azurecr.io/airflow-custom:latest
+          image: airflowacr26970.azurecr.io/airflow-custom:latest
           volumeMounts:
             - name: secrets-store-inline
               mountPath: "/mnt/secrets"
