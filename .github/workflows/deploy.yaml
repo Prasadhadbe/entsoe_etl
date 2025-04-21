@@ -7,7 +7,7 @@ on:
 
 env:
   ACR_NAME: airflowacr26970
-  AKS_RESOURCE_GROUP: airflow-rg
+  AKS_RESOURCE_GROUP: MC_airflow-rg_airflow-aks_centralindia
   AKS_CLUSTER_NAME: airflow-aks
   IMAGE_NAME: airflow
   IMAGE_TAG: latest
@@ -79,7 +79,7 @@ jobs:
           kubectl wait pod -n airflow \
             --for=condition=Ready \
             -l app=airflow-webserver \
-            --timeout=3000s || {
+            --timeout=2000s || {
               echo "Webserver pod didn't become ready immediately. Waiting 10 seconds before checking again..."
               sleep 10
               

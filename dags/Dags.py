@@ -107,35 +107,6 @@ with DAG(
     transformed = transform_daily(raw_data)
     load_daily(transformed)
 
-    
-    # extract_task = PythonOperator(
-    #     task_id="extract_data",
-    #     python_callable=extract_data,
-    #     op_kwargs={
-    #         "start_date": "{{ ds }}",
-    #         "end_date": "{{ next_ds }}",
-    #         "resolution": "PT60M"
-    #     }
-    # )
-
-    # transform_task = transform_daily()
-    # # transform_task = PythonOperator(
-    # #     task_id="transform_data",
-    # #     python_callable=transform_wrapper,  # No chunk parameter for daily
-    # # )
-
-    # load_task = PythonOperator(
-    #     task_id="load_to_postgres",
-    #     python_callable=load_to_postgres,
-    #     op_kwargs={
-    #         "transform_task_id": "transform_daily",
-    #         "start_date": "{{ ds }}",
-    #         "end_date": "{{ next_ds }}"
-    #     }
-    # )
-
-    # extract_task >> transform_task >> load_task
-
 # Historical Backfill DAG
 with DAG(
     dag_id="day_ahead_prices_historical",

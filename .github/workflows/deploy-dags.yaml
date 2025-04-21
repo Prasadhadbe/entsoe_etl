@@ -1,0 +1,47 @@
+name: Deploy Airflow DAGs to Azure File Share
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "dags/**" # Only run when files in 'dags/' are changed
+      - ".github/workflows/deploy-dags.yml"
+
+jobs:
+  deploy:
+    name: Upload DAGs to Azure File Share
+    runs-on: ubuntu-latest
+    environment: etl-workflow
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Azure CLI
+        uses: azure/setup-azure@v3
+        with:
+          version: latest
+
+      - name: Log in to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Upload DAGs to Azure File Share
+        run: |
+          sudo apt-get update && sudo apt-get install -y cifs-utils
+
+          mkdir dags-mount
+          sudo mount -t cifs //${{ secrets.AZURE_STORAGE_ACCOUNT }}.file.core.windows.net/${{ secrets.AZURE_FILE_SHARE }} \
+            dags-mount \
+            -o vers=3.0,username=${{ secrets.AZURE_STORAGE_ACCOUNT }},password=${{ secrets.AZURE_STORAGE_KEY }},dir_mode=0777,file_mode=0777,serverino
+
+          echo "📂 Copying DAGs..."
+          cp -r dags/* dags-mount/
+
+          echo "✅ DAGs uploaded to Azure File Share!"
+
+      - name: Unmount File Share
+        run: |
+          sudo umount dags-mount

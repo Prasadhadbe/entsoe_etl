@@ -32,5 +32,4 @@ spec:
           persistentVolumeClaim:
             claimName: airflow-dags-pvc
         - name: plugins-volume
-          persistentVolumeClaim:
-            claimName: airflow-dags-pvc
+          emptyDir: {}
