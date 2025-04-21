@@ -5,6 +5,7 @@ metadata:
   namespace: airflow
 spec:
   template:
+    metadata: {}
     spec:
       containers:
         - name: init
