@@ -11,14 +11,11 @@ spec:
           image: airflowacr26970.azurecr.io/airflow:latest
           envFrom:
             - secretRef:
-              name: airflow-secrets
+                name: airflow-secrets
           command:
             - bash
             - -c
             - >
-              export AIRFLOW__CORE__SQL_ALCHEMY_CONN=$(cat /mnt/secrets/POSTGRES-URL) &&
-              export AIRFLOW__WEBSERVER__SECRET_KEY=$(cat /mnt/secrets/AIRFLOW-SECRET-KEY) &&
-              export ENTSOE_API_KEY=$(cat /mnt/secrets/ENTSOE-API-KEY) &&
               airflow db init &&
               airflow users create --username admin --password admin --firstname Air --lastname Flow --role Admin --email admin@example.com
       restartPolicy: Never
