@@ -57,21 +57,26 @@ jobs:
       - name: Wait for Airflow Webserver Pod
         run: |
           echo "Waiting for webserver pod to be ready..."
-          kubectl wait --for=condition=Ready pod -l app=airflow-webserver --timeout=300s
+          kubectl wait pod -n airflow \
+            --for=condition=Ready \
+            -l app=airflow-webserver \
+            --timeout=300s || {
+              echo "Webserver pod didn't become ready in time. Printing debug logs:"
+              kubectl get pods -n airflow
+              kubectl describe pods -n airflow
+              exit 1
+            }
 
       - name: Get Webserver Pod Name
         id: get-pod
         run: |
-          POD_NAME=$(kubectl get pods -l app=airflow-webserver -o jsonpath="{.items[0].metadata.name}")
+          POD_NAME=$(kubectl get pods -n airflow -l app=airflow-webserver -o jsonpath="{.items[0].metadata.name}")
+          echo "Using pod: $POD_NAME"
           echo "pod_name=$POD_NAME" >> $GITHUB_OUTPUT
 
       - name: Copy DAGs to Pod
         run: |
           kubectl cp ./dags ${{ steps.get-pod.outputs.pod_name }}:/opt/airflow/ -c webserver
-
-      - name: Copy Plugins to Pod
-        run: |
-          kubectl cp ./plugins ${{ steps.get-pod.outputs.pod_name }}:/opt/airflow/ -c webserver
 
       - name: Restart Airflow Scheduler
         run: |
