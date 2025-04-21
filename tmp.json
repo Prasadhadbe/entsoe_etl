@@ -1,0 +1,20 @@
+{
+    "apiVersion": "v1",
+    "kind": "Namespace",
+    "metadata": {
+        "annotations": {
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"kind\":\"Namespace\",\"metadata\":{\"annotations\":{},\"name\":\"airflow\"}}\n"
+        },
+        "creationTimestamp": "2025-04-21T12:23:17Z",
+        "labels": {
+            "kubernetes.io/metadata.name": "airflow"
+        },
+        "name": "airflow",
+        "resourceVersion": "119040",
+        "uid": "947cd928-47b9-40bc-acb8-15eab18fb4b4"
+    },
+    "spec": {},
+    "status": {
+        "phase": "Active"
+    }
+}
