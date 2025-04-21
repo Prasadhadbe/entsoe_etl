@@ -46,7 +46,7 @@ jobs:
 
       - name: Apply Namespace first
         run: |
-          kubectl apply -f k8s/namespace.yaml
+          kubectl apply -f /Users/nero/development/entsoe_etl/k8s/airflow-namespace.yaml
           echo "Waiting 5 seconds for namespace to be registered..."
           sleep 5
 
