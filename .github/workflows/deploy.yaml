@@ -40,7 +40,7 @@ jobs:
 
       - name: Replace image tag in deployments
         run: |
-          find k8s -name "*.yaml" -exec sed -i "s|$ACR_NAME.azurecr.io/airflow:.*|$ACR_NAME.azurecr.io/$IMAGE_NAME:$IMAGE_TAG|g" {} \;
+          find /Users/nero/development/entsoe_etl/k8s -name "*.yaml" -exec sed -i "s|$ACR_NAME.azurecr.io/airflow:.*|$ACR_NAME.azurecr.io/$IMAGE_NAME:$IMAGE_TAG|g" {} \;
 
       - name: Apply Kubernetes Manifests
         run: |
