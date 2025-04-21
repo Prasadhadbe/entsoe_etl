@@ -56,37 +56,27 @@ jobs:
 
       - name: Wait for Airflow Webserver Pod
         run: |
-          echo "Waiting for webserver pod to be created..."
-
-          # Wait until the webserver pod is listed (i.e., created)
-          POD_CREATED=false
-          for i in {1..30}; do
-            if kubectl get pods -n airflow -l component=webserver | grep webserver; then
-              echo "✅ Webserver pod found!"
-              POD_CREATED=true
-              break
-            fi
-            echo "⏳ Webserver pod not found yet. Retrying in 10s..."
-            sleep 10
-          done
-
-          if [ "$POD_CREATED" = false ]; then
-            echo "❌ Webserver pod was not created in time."
-            kubectl get pods -n airflow
-            exit 1
-          fi
-
-          # Now wait for the webserver pod to be Ready
-          echo "🔄 Waiting for webserver pod to be ready..."
-          if ! kubectl wait --for=condition=ready pod -l component=webserver -n airflow --timeout=180s; then
-            echo "❌ Webserver pod did not become ready in time."
-            echo "📋 Debugging info:"
-            kubectl get pods -n airflow
-            kubectl describe pods -l component=webserver -n airflow
-            exit 1
-          fi
-
-          echo "✅ Webserver pod is ready!"
+          echo "Waiting for webserver pod to be ready..."
+          kubectl wait pod -n airflow \
+            --for=condition=Ready \
+            -l app=airflow-webserver \
+            --timeout=2000s || {
+              echo "Webserver pod didn't become ready immediately. Waiting 10 seconds before checking again..."
+              sleep 10
+              
+              # Try one more time after the delay
+              kubectl wait pod -n airflow \
+                --for=condition=Ready \
+                -l app=airflow-webserver \
+                --timeout=10s || {
+                  echo "Webserver pod still not ready after waiting. Printing debug logs:"
+                  kubectl get pods -n airflow -o wide
+                  kubectl describe pods -n airflow -l app=airflow-webserver
+                  kubectl logs -n airflow -l app=airflow-webserver --tail=50
+                  exit 1
+                }
+            }
+          echo "Webserver pod is ready!"
 
       - name: Get Webserver Pod Name
         id: get-pod
