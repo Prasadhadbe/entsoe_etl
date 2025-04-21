@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: webserver
-          image: airflowacr26970.azurecr.io/airflow:latest
+          image: airflowacrcluster.azurecr.io/airflow:latest
           command: ["webserver"]
           ports:
             - containerPort: 8080
