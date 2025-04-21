@@ -53,11 +53,14 @@ jobs:
       - name: Apply rest of manifests
         run: |
           kubectl apply -f k8s/
+
+      - name: Wait for Airflow Webserver Pod
+        run: |
           echo "Waiting for webserver pod to be created..."
 
           # Wait until the webserver pod is listed (i.e., created)
           POD_CREATED=false
-          for i in {1..10}; do
+          for i in {1..30}; do
             if kubectl get pods -n airflow -l component=webserver | grep webserver; then
               echo "✅ Webserver pod found!"
               POD_CREATED=true
