@@ -6,7 +6,7 @@ on:
       - main
 
 env:
-  ACR_NAME: airflowacr26970
+  ACR_NAME: airflowacrcluster
   AKS_RESOURCE_GROUP: MC_airflow-rg_airflow-aks_centralindia
   AKS_CLUSTER_NAME: airflow-aks
   IMAGE_NAME: airflow
