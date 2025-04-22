@@ -32,22 +32,23 @@ jobs:
       - name: Upload DAGs to Azure File Share
         run: |
           echo "📤 Uploading DAGs to Azure File Share..."
+          echo "Using Storage Account: ${{ secrets.AZURE_STORAGE_ACCOUNT }}"
 
           az storage file delete-batch \
             --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT }} \
             --account-key ${{ secrets.AZURE_STORAGE_KEY }} \
-            --source ${{ secrets.AZURE_FILE_SHARE }}/dags \
+            --source "${{ secrets.AZURE_FILE_SHARE }}/dags" \
             --pattern "*" \
-            --auth-mode key
+            --auth-mode key \
+            --verbose
 
           az storage file upload-batch \
             --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT }} \
             --account-key ${{ secrets.AZURE_STORAGE_KEY }} \
-            --destination ${{ secrets.AZURE_FILE_SHARE }}/dags \
-            --source dags \
-            --auth-mode key
-
-          echo "✅ DAGs uploaded successfully."
+            --destination "${{ secrets.AZURE_FILE_SHARE }}/dags" \
+            --source "dags" \
+            --auth-mode key \
+            --verbose
 
       - name: Restart Airflow Deployments
         run: |
