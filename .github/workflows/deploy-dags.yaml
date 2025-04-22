@@ -35,11 +35,11 @@ jobs:
         run: |
           echo "📂 Checking/creating file share and DAGs directory..."
 
-          az storage share-rm create \
-            --resource-group $AKS_RESOURCE_GROUP \
-            --storage-account ${{ secrets.AZURE_STORAGE_ACCOUNT }} \
-            --name $FILE_SHARE_NAME || true
-            
+          az storage share create \
+            --name $FILE_SHARE_NAME \
+            --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT }} \
+            --account-key ${{ secrets.AZURE_STORAGE_KEY }} || true
+
           az storage directory create \
             --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT }} \
             --account-key ${{ secrets.AZURE_STORAGE_KEY }} \
