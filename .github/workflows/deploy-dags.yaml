@@ -29,23 +29,28 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Upload DAGs to Azure File Share
+      - name: Upload DAGs
         run: |
-          echo "📤 Uploading DAGs to Azure File Share..."
-          echo "Using Storage Account: ${{ secrets.AZURE_STORAGE_ACCOUNT }}"
+          echo "🔍 Verifying file share access..."
+          az storage share exists \
+            --account-name f314a19b0d8b1437a879f40 \
+            --name pvc-a97254bb-1499-4e7e-bc74-cd016e8fa2bf \
+            --account-key ${{ secrets.AZURE_STORAGE_KEY }} \
+            --output tsv
 
+          echo "🧹 Clearing existing DAGs..."
           az storage file delete-batch \
-            --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT }} \
+            --account-name f314a19b0d8b1437a879f40 \
             --account-key ${{ secrets.AZURE_STORAGE_KEY }} \
-            --source "${{ secrets.AZURE_FILE_SHARE }}/dags" \
+            --source "pvc-a97254bb-1499-4e7e-bc74-cd016e8fa2bf/dags" \
             --pattern "*" \
-            --auth-mode key \
-            --verbose
+            --auth-mode key
 
+          echo "🚀 Uploading new DAGs..."
           az storage file upload-batch \
-            --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT }} \
+            --account-name f314a19b0d8b1437a879f40 \
             --account-key ${{ secrets.AZURE_STORAGE_KEY }} \
-            --destination "${{ secrets.AZURE_FILE_SHARE }}/dags" \
+            --destination "pvc-a97254bb-1499-4e7e-bc74-cd016e8fa2bf/dags" \
             --source "dags" \
             --auth-mode key \
             --verbose
