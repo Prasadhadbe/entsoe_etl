@@ -51,11 +51,9 @@ jobs:
           echo "📤 Uploading DAGs using az storage file upload-batch...."
 
           az storage file upload-batch \
-            --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT }} \
-            --account-key ${{ secrets.AZURE_STORAGE_KEY }} \
+            --connection-string ${{ secrets.STORAGE_CONNECTION_STRING }} \
             --destination "$FILE_SHARE_NAME/$DAGS_DIR_NAME" \
-            --source "./dags" \
-            --connection-string ${{ secrets.STORAGE_CONNECTION_STRING }}
+            --source "./dags"
 
       - name: Restart Airflow Deployments
         run: |
