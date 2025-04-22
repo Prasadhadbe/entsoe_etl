@@ -39,7 +39,7 @@ jobs:
             --resource-group $AKS_RESOURCE_GROUP \
             --storage-account ${{ secrets.AZURE_STORAGE_ACCOUNT }} \
             --name $FILE_SHARE_NAME || true
-
+            
           az storage directory create \
             --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT }} \
             --account-key ${{ secrets.AZURE_STORAGE_KEY }} \
@@ -48,10 +48,10 @@ jobs:
 
       - name: Upload DAGs using Azure CLI
         run: |
-          echo "📤 Uploading DAGs using az storage file upload-batch...."
+          echo "📤 Uploading DAGs using az storage file upload-batch..."
 
           az storage file upload-batch \
-            --connection-string ${{ secrets.STORAGE_CONNECTION_STRING }} \
+            --connection-string "${{ secrets.STORAGE_CONNECTION_STRING }}" \
             --destination "$FILE_SHARE_NAME/$DAGS_DIR_NAME" \
             --source "./dags"
 
