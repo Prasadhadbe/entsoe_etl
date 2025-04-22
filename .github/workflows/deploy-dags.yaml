@@ -52,7 +52,7 @@ jobs:
 
           az storage file upload-batch \
             --connection-string "${{ secrets.STORAGE_CONNECTION_STRING }}" \
-            --destination "$FILE_SHARE_NAME" \
+            --destination "$FILE_SHARE_NAME/$DAGS_DIR_NAME" \
             --source "./dags"
 
       - name: Restart Airflow Deployments
