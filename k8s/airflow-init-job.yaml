@@ -23,4 +23,15 @@ spec:
               set -ex;
               airflow db init;
               airflow users create --username admin --password admin --firstname Air --lastname Flow --role Admin --email admin@example.com
+          volumeMounts:
+            - name: dags
+              mountPath: /opt/airflow/dags
+            - name: logs
+              mountPath: /opt/airflow/logs
       restartPolicy: Never
+      volumes:
+        - name: dags
+          persistentVolumeClaim:
+            claimName: airflow-dags-pvc
+        - name: logs
+          emptyDir: {} # or use another PVC if logs need persistence
