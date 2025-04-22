@@ -54,7 +54,8 @@ jobs:
             --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT }} \
             --account-key ${{ secrets.AZURE_STORAGE_KEY }} \
             --destination "$FILE_SHARE_NAME/$DAGS_DIR_NAME" \
-            --source "./dags"
+            --source "./dags" \
+            --connection-string "DefaultEndpointsProtocol=https;AccountName=f314a19b0d8b1437a879f40;AccountKey=UtTlLAf1Y1fBte2Hg1+sEGBd8rpRn5P7mw6S+4mq+KbTHd9eA57gogYqZkrEyz0Lo0gkgo23VWeA+ASt9gDfJQ==;EndpointSuffix=core.windows.net"
 
       - name: Restart Airflow Deployments
         run: |
