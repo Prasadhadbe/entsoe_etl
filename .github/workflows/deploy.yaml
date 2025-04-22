@@ -129,7 +129,3 @@ jobs:
               sleep 10
             fi
           done
-
-      - name: Restart Airflow Scheduler
-        run: |
-          kubectl rollout restart deployment airflow-scheduler

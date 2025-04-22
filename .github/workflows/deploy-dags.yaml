@@ -23,6 +23,7 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
       - name: Log in to Azure
         uses: azure/login@v1
         with:
@@ -37,6 +38,9 @@ jobs:
             dags-mount \
             -o vers=3.0,username=${{ secrets.AZURE_STORAGE_ACCOUNT }},password=${{ secrets.AZURE_STORAGE_KEY }},dir_mode=0777,file_mode=0777,serverino
 
+          echo "🧹 Cleaning Azure File Share DAG folder..."
+          rm -rf dags-mount/*
+
           echo "📂 Copying DAGs..."
           cp -r dags/* dags-mount/
 
@@ -45,3 +49,9 @@ jobs:
       - name: Unmount File Share
         run: |
           sudo umount dags-mount
+
+      - name: Restart Airflow Deployments
+        run: |
+          az aks get-credentials --resource-group $AKS_RESOURCE_GROUP --name $AKS_CLUSTER_NAME --overwrite-existing
+          kubectl rollout restart deployment airflow-webserver -n airflow
+          kubectl rollout restart deployment airflow-scheduler -n airflow
