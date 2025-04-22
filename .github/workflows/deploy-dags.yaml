@@ -39,7 +39,7 @@ jobs:
             --resource-group $AKS_RESOURCE_GROUP \
             --storage-account ${{ secrets.AZURE_STORAGE_ACCOUNT }} \
             --name $FILE_SHARE_NAME || true
-
+            
           az storage directory create \
             --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT }} \
             --account-key ${{ secrets.AZURE_STORAGE_KEY }} \
