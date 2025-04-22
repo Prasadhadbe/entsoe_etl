@@ -22,6 +22,9 @@ spec:
           envFrom:
             - secretRef:
                 name: airflow-secrets
+          env:
+            - name: AIRFLOW__WEBSERVER__EXPOSE_SEQUENTIAL_EXECUTOR_WARNING
+              value: "False"
           volumeMounts:
             - name: dags-volume
               mountPath: /opt/airflow/dags
