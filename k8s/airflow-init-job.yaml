@@ -24,10 +24,10 @@ spec:
               airflow db init;
               airflow users create --username admin --password admin --firstname Air --lastname Flow --role Admin --email admin@example.com
           volumeMounts:
-            - name: dags
+            - name: dags-volume
               mountPath: /opt/airflow/dags
       restartPolicy: Never
       volumes:
-        - name: dags
+        - name: dags-volume
           persistentVolumeClaim:
             claimName: airflow-dags-pvc
