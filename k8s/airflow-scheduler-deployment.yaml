@@ -17,8 +17,6 @@ spec:
         - name: scheduler
           image: airflowacrcluster.azurecr.io/airflow:latest
           command: ["airflow", "scheduler"]
-          ports:
-            - containerPort: 8080
           envFrom:
             - secretRef:
                 name: airflow-secrets
