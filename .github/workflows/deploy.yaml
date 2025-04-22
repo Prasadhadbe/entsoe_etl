@@ -112,7 +112,23 @@ jobs:
 
       - name: Copy DAGs to Pod
         run: |
-          kubectl cp ./dags ${{ steps.get-pod.outputs.pod_name }}:/opt/airflow/ -c webserver
+          POD_NAME=$(kubectl get pods -n airflow -l app=airflow-webserver -o jsonpath="{.items[0].metadata.name}")
+          echo "Copying DAGs to $POD_NAME"
+          kubectl cp ./dags $POD_NAME:/opt/airflow/ -n airflow -c webserver
+
+      - name: Get Airflow Webserver Public IP
+        run: |
+          echo "🌐 Fetching LoadBalancer IP for Airflow Webserver..."
+          for i in {1..10}; do
+            IP=$(kubectl get svc airflow-webserver -n airflow -o jsonpath="{.status.loadBalancer.ingress[0].ip}")
+            if [ -n "$IP" ]; then
+              echo "✅ Airflow Webserver is live at: http://$IP:8080"
+              break
+            else
+              echo "Waiting for LoadBalancer IP to be assigned..."
+              sleep 10
+            fi
+          done
 
       - name: Restart Airflow Scheduler
         run: |
