@@ -13,7 +13,7 @@ env:
   AKS_CLUSTER_NAME: airflow-aks
   IMAGE_NAME: airflow
   IMAGE_TAG: latest
-  FILE_SHARE_NAME: pvc-a97254bb-1499-4e7e-bc74-cd016e8fa2bf
+  FILE_SHARE_NAME: airflowfileshare
   DAGS_DIR_NAME: dags
 
 jobs:
