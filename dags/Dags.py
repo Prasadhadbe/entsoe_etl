@@ -13,7 +13,7 @@ from airflow.models.xcom import LazyXComAccess
 from airflow.operators.python import get_current_context
 
 
-# deploy test (if dags != changed ? no deploy : deploy new #####)
+# deploy test (if dags != changed ? no deploy : deploy new ####)
 
 # Common default arguments for all DAGs
 default_args = {

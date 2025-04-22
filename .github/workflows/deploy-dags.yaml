@@ -21,6 +21,10 @@ jobs:
     environment: etl-workflow
 
     steps:
+      - name: Test DNS resolution
+        run: |
+          nslookup ${{ secrets.AZURE_STORAGE_ACCOUNT }}.file.core.windows.net
+
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -29,22 +33,21 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Upload DAGs to Azure File Share
+      - name: Mount Azure File Share
         run: |
-          sudo apt-get update && sudo apt-get install -y cifs-utils
+          for i in {1..5}; do
+            if sudo mount -t cifs //${{ secrets.AZURE_STORAGE_ACCOUNT }}.file.core.windows.net/${{ secrets.AZURE_FILE_SHARE }} dags-mount -o vers=3.0,username=${{ secrets.AZURE_STORAGE_ACCOUNT }},password=${{ secrets.AZURE_STORAGE_KEY }},dir_mode=0777,file_mode=0777,serverino; then
+              echo "DAGs uploaded to Azure File Share"
+              break
+            else
+              echo "Attempt $i failed. Retrying in 5 seconds..."
+              sleep 5
+            fi
+          done
 
-          mkdir dags-mount
-          sudo mount -t cifs //${{ secrets.AZURE_STORAGE_ACCOUNT }}.file.core.windows.net/${{ secrets.AZURE_FILE_SHARE }} \
-            dags-mount \
-            -o vers=3.0,username=${{ secrets.AZURE_STORAGE_ACCOUNT }},password=${{ secrets.AZURE_STORAGE_KEY }},dir_mode=0777,file_mode=0777,serverino
-
-          echo "🧹 Cleaning Azure File Share DAG folder..."
-          rm -rf dags-mount/*
-
-          echo "📂 Copying DAGs..."
-          cp -r dags/* dags-mount/
-
-          echo "✅ DAGs uploaded to Azure File Share!"
+      - name: Debug mount command
+        run: |
+          echo "Mounting: //${{ secrets.AZURE_STORAGE_ACCOUNT }}.file.core.windows.net/${{ secrets.AZURE_FILE_SHARE }}"
 
       - name: Unmount File Share
         run: |
