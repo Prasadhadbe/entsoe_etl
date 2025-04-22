@@ -23,7 +23,7 @@ spec:
           volumeMounts:
             - name: dags-volume
               mountPath: /opt/airflow/dags
-            - name: logs-volumne
+            - name: logs-volume
               mountPath: /opt/airflow/logs
       volumes:
         - name: dags-volume
