@@ -13,6 +13,8 @@ env:
   AKS_CLUSTER_NAME: airflow-aks
   IMAGE_NAME: airflow
   IMAGE_TAG: latest
+  FILE_SHARE_NAME: pvc-a97254bb-1499-4e7e-bc74-cd016e8fa2bf
+  DAGS_DIR_NAME: dags
 
 jobs:
   deploy:
@@ -29,17 +31,30 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      - name: Ensure Share and DAGs Directory Exists
+        run: |
+          echo "📂 Checking/creating file share and DAGs directory..."
+
+          az storage share-rm create \
+            --resource-group $AKS_RESOURCE_GROUP \
+            --storage-account ${{ secrets.AZURE_STORAGE_ACCOUNT }} \
+            --name $FILE_SHARE_NAME || true
+
+          az storage directory create \
+            --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT }} \
+            --account-key ${{ secrets.AZURE_STORAGE_KEY }} \
+            --share-name $FILE_SHARE_NAME \
+            --name $DAGS_DIR_NAME || true
+
       - name: Upload DAGs using Azure CLI
         run: |
-          echo "📂 Uploading DAGs using az storage file upload-batch..."
+          echo "📤 Uploading DAGs using az storage file upload-batch..."
 
           az storage file upload-batch \
             --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT }} \
             --account-key ${{ secrets.AZURE_STORAGE_KEY }} \
-            --destination "pvc-a97254bb-1499-4e7e-bc74-cd016e8fa2bf/dags" \
+            --destination "$FILE_SHARE_NAME/$DAGS_DIR_NAME" \
             --source "./dags"
-
-          echo "✅ DAGs successfully uploaded to Azure File Share."
 
       - name: Restart Airflow Deployments
         run: |
