@@ -103,18 +103,17 @@ jobs:
           kubectl describe pods -n airflow;
           kubectl logs -n airflow -l app=airflow-webserver --all-containers=true;
 
+      - name: Restart Airflow Deployments
+        run: |
+          kubectl rollout restart deployment airflow-webserver -n airflow
+          kubectl rollout restart deployment airflow-scheduler -n airflow
+
       - name: Get Webserver Pod Name
         id: get-pod
         run: |
           POD_NAME=$(kubectl get pods -n airflow -l app=airflow-webserver -o jsonpath="{.items[0].metadata.name}")
           echo "Using pod: $POD_NAME"
           echo "pod_name=$POD_NAME" >> $GITHUB_OUTPUT
-
-      - name: Copy DAGs to Pod
-        run: |
-          POD_NAME=$(kubectl get pods -n airflow -l app=airflow-webserver -o jsonpath="{.items[0].metadata.name}")
-          echo "Copying DAGs to $POD_NAME"
-          kubectl cp ./dags $POD_NAME:/opt/airflow/ -n airflow -c webserver
 
       - name: Get Airflow Webserver Public IP
         run: |

@@ -29,47 +29,22 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Install dependencies
+      - name: Upload DAGs to Azure File Share
         run: |
-          sudo apt-get update && sudo apt-get install -y cifs-utils
-
-      - name: Test DNS resolution
-        run: |
-          nslookup ${{ secrets.AZURE_STORAGE_ACCOUNT }}.file.core.windows.net || true
-
-      - name: Create mount directory
-        run: |
-          mkdir -p dags-mount
-
-      - name: Mount Azure File Share
-        run: |
-          for i in {1..5}; do
-            if sudo mount -t cifs //${{ secrets.AZURE_STORAGE_ACCOUNT }}.file.core.windows.net/${{ secrets.AZURE_FILE_SHARE }} dags-mount -o vers=3.0,username=${{ secrets.AZURE_STORAGE_ACCOUNT }},password=${{ secrets.AZURE_STORAGE_KEY }},dir_mode=0777,file_mode=0777,serverino; then
-              echo "Mount successful on attempt $i"
-              break
-            else
-              echo "Attempt $i failed. Retrying in 5 seconds..."
-              sleep 5
-            fi
-          done
-
-      - name: Upload DAGs
-        run: |
-          echo "🧹 Cleaning Azure File Share DAG folder..."
-          rm -rf dags-mount/*
-
-          echo "📂 Copying DAGs..."
-          cp -r dags/* dags-mount/
-
-          echo "✅ DAGs uploaded to Azure File Share!"
-
-      - name: Unmount File Share
-        if: always()
-        run: |
-          sudo umount dags-mount || true
+          echo "📤 Uploading DAGs to Azure File Share..."
+          az storage file upload-batch \
+            --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT }} \
+            --account-key ${{ secrets.AZURE_STORAGE_KEY }} \
+            --destination ${{ secrets.AZURE_FILE_SHARE }} \
+            --source dags \
+            --destination-path dags \
+            --overwrite
+          echo "✅ DAGs uploaded successfully!"
 
       - name: Restart Airflow Deployments
         run: |
+          echo "🔄 Restarting Airflow pods to reload DAGs..."
           az aks get-credentials --resource-group $AKS_RESOURCE_GROUP --name $AKS_CLUSTER_NAME --overwrite-existing
           kubectl rollout restart deployment airflow-webserver -n airflow
           kubectl rollout restart deployment airflow-scheduler -n airflow
+          echo "✅ Restart complete!"
