@@ -33,19 +33,19 @@ jobs:
         run: |
           echo "📤 Uploading DAGs to Azure File Share..."
 
-          # Clean the destination folder (delete existing files)
           az storage file delete-batch \
             --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT }} \
-            --source ${{ secrets.AZURE_FILE_SHARE }}/dags \
             --account-key ${{ secrets.AZURE_STORAGE_KEY }} \
-            --yes
+            --source ${{ secrets.AZURE_FILE_SHARE }}/dags \
+            --pattern "*" \
+            --auth-mode key
 
-          # Upload fresh DAGs
           az storage file upload-batch \
             --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT }} \
+            --account-key ${{ secrets.AZURE_STORAGE_KEY }} \
             --destination ${{ secrets.AZURE_FILE_SHARE }}/dags \
             --source dags \
-            --account-key ${{ secrets.AZURE_STORAGE_KEY }}
+            --auth-mode key
 
           echo "✅ DAGs uploaded successfully."
 
