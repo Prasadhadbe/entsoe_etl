@@ -3,8 +3,6 @@ kind: PersistentVolumeClaim
 metadata:
   name: airflow-dags-pvc
   namespace: airflow
-  annotations:
-    volume.beta.kubernetes.io/storage-provisioner: file.csi.azure.com
 spec:
   accessModes:
     - ReadWriteMany
@@ -12,5 +10,3 @@ spec:
   resources:
     requests:
       storage: 5Gi
-  volumeAttributes:
-    secretName: azure-file-secret
