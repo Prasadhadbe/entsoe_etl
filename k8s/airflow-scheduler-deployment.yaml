@@ -23,12 +23,7 @@ spec:
           volumeMounts:
             - name: dags-volume
               mountPath: /opt/airflow/dags
-            - name: logs-volume
-              mountPath: /opt/airflow/logs
       volumes:
         - name: dags-volume
           persistentVolumeClaim:
             claimName: airflow-dags-pvc
-        - name: logs-volume
-          persistentVolumeClaim:
-            claimName: airflow-logs-pvc
