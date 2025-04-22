@@ -1,6 +1,6 @@
 ---
 
-```markdown
+markdown
 # ENTSOE Day-Ahead Electricity Prices ETL Pipeline
 
 This project implements a robust ETL pipeline to fetch day-ahead electricity prices from ENTSOE (European Network of Transmission System Operators for Electricity), transform the data, and store it in a PostgreSQL database. The pipeline uses Apache Airflow and is deployable locally via Docker or on Azure Kubernetes Service (AKS) with GitHub Actions for CI/CD.
