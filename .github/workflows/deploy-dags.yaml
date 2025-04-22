@@ -29,25 +29,17 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Upload DAGs (Fixed)
+      - name: Upload DAGs using Azure CLI
         run: |
-          # Generate 2-hour SAS token
-          EXPIRY=$(date -u -d "2 hours" '+%Y-%m-%dT%H:%MZ')
-          SAS=$(az storage account generate-sas \
-            --account-name f314a19b0d8b1437a879f40 \
-            --account-key "${{ secrets.AZURE_STORAGE_KEY }}" \
-            --services f \
-            --resource-types sco \
-            --permissions cdlruwap \
-            --expiry $EXPIRY \
-            --output tsv)
+          echo "📂 Uploading DAGs using az storage file upload-batch..."
 
-          # Upload with SAS token
           az storage file upload-batch \
-            --destination "https://f314a19b0d8b1437a879f40.file.core.windows.net/pvc-a97254bb-1499-4e7e-bc74-cd016e8fa2bf/dags?$SAS" \
-            --source "./dags" \
-            --max-connections 8 \
-            --verbose
+            --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT }} \
+            --account-key ${{ secrets.AZURE_STORAGE_KEY }} \
+            --destination "pvc-a97254bb-1499-4e7e-bc74-cd016e8fa2bf/dags" \
+            --source "./dags"
+
+          echo "✅ DAGs successfully uploaded to Azure File Share."
 
       - name: Restart Airflow Deployments
         run: |
