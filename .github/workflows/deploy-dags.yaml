@@ -5,11 +5,11 @@ on:
     branches:
       - main
     paths:
-      - "dags/**" # Only run when files in 'dags/' are changed
+      - "dags/**"
 
 env:
   ACR_NAME: airflowacrcluster
-  AKS_RESOURCE_GROUP: MC_airflow-rg_airflow-aks_centralindia
+  AKS_RESOURCE_GROUP: airflow-rg
   AKS_CLUSTER_NAME: airflow-aks
   IMAGE_NAME: airflow
   IMAGE_TAG: latest
