@@ -38,14 +38,6 @@ jobs:
             --account-key ${{ secrets.AZURE_STORAGE_KEY }} \
             --output tsv
 
-          echo "🧹 Clearing existing DAGs..."
-          az storage file delete-batch \
-            --account-name f314a19b0d8b1437a879f40 \
-            --account-key ${{ secrets.AZURE_STORAGE_KEY }} \
-            --source "pvc-a97254bb-1499-4e7e-bc74-cd016e8fa2bf/dags" \
-            --pattern "*" \
-            --auth-mode key
-
           echo "🚀 Uploading new DAGs..."
           az storage file upload-batch \
             --account-name f314a19b0d8b1437a879f40 \
