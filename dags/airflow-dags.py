@@ -1,14 +1,14 @@
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from datetime import datetime, timedelta
-from etl.extract import extract_data
-from etl.transform import transform_data
-from etl.load import load_to_postgres, load_wrapper
+from .etl.extract import extract_data
+from .etl.transform import transform_data
+from .etl.load import load_to_postgres, load_wrapper
 from airflow.decorators import task
 from util.utils import get_weekly_chunks
 from airflow.decorators import task
 from datetime import datetime
-from etl.transform import transform_data 
+from .etl.transform import transform_data 
 from airflow.models.xcom import LazyXComAccess 
 from airflow.operators.python import get_current_context
 
