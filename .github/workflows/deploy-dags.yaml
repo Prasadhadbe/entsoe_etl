@@ -31,7 +31,7 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Ensure Share Directory Exists
+      - name: Ensure Share and DAGs Directory Exists
         run: |
           echo "📂 Checking/creating file share and DAGs directory..."
 
@@ -40,14 +40,20 @@ jobs:
             --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT }} \
             --account-key ${{ secrets.AZURE_STORAGE_KEY }} || true
 
+          az storage directory create \
+            --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT }} \
+            --account-key ${{ secrets.AZURE_STORAGE_KEY }} \
+            --share-name $FILE_SHARE_NAME \
+            --name $DAGS_DIR_NAME || true
+
       - name: Upload DAGs using Azure CLI
         run: |
           echo "📤 Uploading DAGs using az storage file upload-batch..."
-          cd dags
+
           az storage file upload-batch \
             --connection-string "${{ secrets.STORAGE_CONNECTION_STRING }}" \
-            --source "." \
-            --destination "$FILE_SHARE_NAME"
+            --destination "$FILE_SHARE_NAME" \
+            --source "./dags"
 
       - name: Restart Airflow Deployments
         run: |

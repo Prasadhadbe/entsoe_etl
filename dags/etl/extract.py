@@ -29,7 +29,7 @@ def validate_dates(start: datetime, end: datetime) -> None:
     if (end - start) > timedelta(days=7):  # ENTSOE typically has 7-day limit
         logging.warning("Requesting data for more than 7 days - might hit API limits")
 
-def extract_data(start_date: Optional[str] = None, end_date: Optional[str] = None, resolution: str = "PT60M", **kwargs) -> str:
+def extract_data(start_date: Optional[str] = None, end_date: Optional[str] = None, resolution: str = "PT15M", **kwargs) -> str:
     """
     Extract day-ahead prices from ENTSOE API.
 

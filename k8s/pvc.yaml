@@ -6,8 +6,7 @@ metadata:
 spec:
   accessModes:
     - ReadWriteMany
-  storageClassName: azurefile-csi
-  volumeName: airflow-dags-pv
+  storageClassName: azurefile
   resources:
     requests:
       storage: 5Gi

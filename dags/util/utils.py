@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-def get_monthly_chunks(start: str, end: str):
+def get_weekly_chunks(start: str, end: str):
     chunks = []
     current = datetime.strptime(start, "%Y-%m-%d")
     end_dt = datetime.strptime(end, "%Y-%m-%d")
