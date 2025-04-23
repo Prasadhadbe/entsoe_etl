@@ -25,9 +25,24 @@ spec:
           env:
             - name: AIRFLOW__WEBSERVER__EXPOSE_SEQUENTIAL_EXECUTOR_WARNING
               value: "False"
+            - name: AIRFLOW__LOGGING__REMOTE_LOGGING
+              valueFrom:
+                secretKeyRef:
+                  name: airflow-secrets
+                  key: AIRFLOW__LOGGING__REMOTE_LOGGING
+            - name: AIRFLOW__LOGGING__REMOTE_BASE_LOG_FOLDER
+              valueFrom:
+                secretKeyRef:
+                  name: airflow-secrets
+                  key: AIRFLOW__LOGGING__REMOTE_BASE_LOG_FOLDER
+            - name: AIRFLOW__LOGGING__REMOTE_LOG_CONN_ID
+              valueFrom:
+                secretKeyRef:
+                  name: airflow-secrets
+                  key: AIRFLOW__LOGGING__REMOTE_LOG_CONN_ID
           volumeMounts:
             - name: dags-volume
-              mountPath: /opt/airflow
+              mountPath: /opt/airflow/dags
       volumes:
         - name: dags-volume
           persistentVolumeClaim:

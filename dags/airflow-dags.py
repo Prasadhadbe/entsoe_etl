@@ -5,7 +5,7 @@ from etl.extract import extract_data
 from etl.transform import transform_data
 from etl.load import load_to_postgres, load_wrapper
 from airflow.decorators import task
-from util.utils import get_weekly_chunks
+from util.utils import get_daily_chunks
 from airflow.decorators import task
 from datetime import datetime
 from etl.transform import transform_data 
@@ -13,14 +13,14 @@ from airflow.models.xcom import LazyXComAccess
 from airflow.operators.python import get_current_context
 
 
-# deploy test (if dags != changed ? no deploy : deploy new ####)
+# deploy test (if dags != changed ? no deploy : deploy new #####)
 
 
 # Common default arguments for all DAGs
 default_args = {
     "owner": "airflow",
     "retries": 1,
-    "retry_delay":timedelta(minutes=1)
+    "retry_delay":timedelta(minutes=1),
 }
 current_date = datetime.now()
 next_date = current_date + timedelta(days=1)
@@ -28,9 +28,9 @@ next_date = current_date + timedelta(days=1)
 
 @task
 def generate_chunks():
-    chunks = get_weekly_chunks("2024-01-01", datetime.today().strftime("%Y-%m-%d")) # prod 
-    # return [{"start_date": "2024-01-01", "end_date": "2024-01-08"}] #(for testing)
-    return [{"start_date": c["start_date"], "end_date": c["end_date"]} for c in chunks] # prod
+    chunks = get_daily_chunks("2024-01-01", datetime.today().strftime("%Y-%m-%d")) 
+    # return [{"start_date": "2024-01-01", "end_date": "2024-01-15"}] #for testing
+    return [{"start_date": c["start_date"], "end_date": c["end_date"]} for c in chunks] 
 
 @task
 def extract_wrapper(chunk):
@@ -46,28 +46,6 @@ def transform_wrapper(chunk, raw_xml):
 
     print(f"📥 Raw XML received (preview):\n{raw_xml[:500]}...")
     return transform_data(raw_xml)
-
-
-@task
-def transform_daily():
-    context = get_current_context()
-    ti = context["ti"]
-
-    raw_xml = ti.xcom_pull(task_ids="extract_data")
-    if not isinstance(raw_xml, str):
-        raise ValueError(f"Expected XML string but got: {type(raw_xml)}")
-
-    print(f"📥 Raw XML received (preview):\n{raw_xml[:500]}...")
-
-    # Transform the XML into structured data
-    transformed_data = transform_data(raw_xml)
-
-    # Convert datetime objects to ISO strings (for XCom compatibility)
-    for row in transformed_data:
-        if isinstance(row.get("timestamp"), datetime):
-            row["timestamp"] = row["timestamp"].isoformat()
-
-    return transformed_data
 
 
 # Daily DAG
@@ -116,9 +94,9 @@ with DAG(
     schedule_interval=None,
     catchup=False,
     start_date=datetime(2024, 1, 1),
-    concurrency=300,
-    max_active_runs=200,
-    max_active_tasks=300,
+    concurrency=10,
+    max_active_runs=5,
+    max_active_tasks=10,
 ) as dag:
     # Generate chunks for dynamic mapping
     chunks = generate_chunks()
