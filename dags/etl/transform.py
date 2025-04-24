@@ -2,7 +2,7 @@ import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
 import pytz
 
-def transform_data(raw_xml, target_resolution="PT60M", truncate_preview=True):
+def transform_data(raw_xml, target_resolution="PT60M", truncate_preview=True, is_daily =False):
     ns = {"ns": "urn:iec62325.351:tc57wg16:451-3:publicationdocument:7:3"}
 
     # Validate target resolution
@@ -50,7 +50,7 @@ def transform_data(raw_xml, target_resolution="PT60M", truncate_preview=True):
             base_time_naive = datetime.strptime(start_elem.text, "%Y-%m-%dT%H:%MZ")
             # Attach CET timezone and convert to UTC
             base_time_cet = cet.localize(base_time_naive.replace(tzinfo=None), is_dst=None)
-            base_time_utc = base_time_cet.astimezone(pytz.utc)
+            # base_time_utc = base_time_cet.astimezone(pytz.utc)
         except Exception as e:
             print(f"⚠️ Time parsing/conversion error: {e}")
             continue
@@ -62,9 +62,10 @@ def transform_data(raw_xml, target_resolution="PT60M", truncate_preview=True):
                 pos = int(point.find("ns:position", ns).text)
                 price = float(point.find("ns:price.amount", ns).text)
                 timestamp = base_time_cet + timedelta(minutes=interval_minutes * (pos - 1))
-                if len(all_prices) > 24:
-                    print(f"⚠️ Got {len(all_prices)} entries, trimming to 24...")
-                    all_prices = all_prices[:24]
+                if is_daily:
+                    if len(all_prices) > 24:
+                        print(f"⚠️ Got {len(all_prices)} entries, trimming to 24...")
+                        all_prices = all_prices[:24]
                 all_prices.append({
                     "timestamp": timestamp.isoformat(),
                     "price_eur_per_mwh": price

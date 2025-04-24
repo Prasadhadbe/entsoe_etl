@@ -34,7 +34,7 @@ def extract_wrapper(chunk):
 @task
 def transform_wrapper(chunk, raw_xml):
     print(f"🔁 Running transform for: {chunk['start_date']} → {chunk['end_date']}")
-    return transform_data(raw_xml)
+    return transform_data(raw_xml, is_daily=False)
 
 
 @task
@@ -49,7 +49,7 @@ def transform_daily():
     print(f"📥 Raw XML received (preview):\n{raw_xml[:500]}...")
 
     # Transform the XML into structured data
-    transformed_data = transform_data(raw_xml)
+    transformed_data = transform_data(raw_xml, is_daily=True)
 
     # Convert datetime objects to ISO strings (for XCom compatibility)
     for row in transformed_data:
@@ -82,7 +82,7 @@ with DAG(
     def transform_daily(raw_xml, resolution="PT60M"):
         if not isinstance(raw_xml, str):
             raise ValueError(f"Expected XML string but got: {type(raw_xml)}")
-        return transform_data(raw_xml, target_resolution=resolution)
+        return transform_data(raw_xml, target_resolution=resolution, is_daily=True)
     
     @task
     def load_daily(transformed_data):
