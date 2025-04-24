@@ -25,7 +25,7 @@ spec:
               airflow users create --username admin --password admin --firstname Air --lastname Flow --role Admin --email admin@example.com
           volumeMounts:
             - name: dags-volume
-              mountPath: /opt/airflow/
+              mountPath: /opt/airflow
       restartPolicy: Never
       volumes:
         - name: dags-volume
