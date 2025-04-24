@@ -28,9 +28,9 @@ next_date = current_date + timedelta(days=1)
 
 @task
 def generate_chunks():
-    # chunks = get_weekly_chunks("2024-01-01", datetime.today().strftime("%Y-%m-%d")) # prod 
-    return [{"start_date": "2024-01-01", "end_date": "2024-01-08"}] #(for testing)
-    # return [{"start_date": c["start_date"], "end_date": c["end_date"]} for c in chunks] # prod
+    chunks = get_weekly_chunks("2024-01-01", datetime.today().strftime("%Y-%m-%d")) # prod 
+    # return [{"start_date": "2024-01-01", "end_date": "2024-01-08"}] #(for testing)
+    return [{"start_date": c["start_date"], "end_date": c["end_date"]} for c in chunks] # prod
 
 @task
 def extract_wrapper(chunk):
@@ -38,13 +38,20 @@ def extract_wrapper(chunk):
 
 
 @task
-def transform_wrapper(chunk, raw_xml):
+def transform_wrapper(chunk, raw_xml=None):
+    from airflow.operators.python import get_current_context
+    context = get_current_context()
+    ti = context["ti"]
+
     print(f"🔁 Running transform for: {chunk['start_date']} → {chunk['end_date']}")
+
+    if raw_xml is None:
+        raw_xml = ti.xcom_pull(task_ids="extract_wrapper", key="return_value")
+        print("📦 raw_xml pulled from XCom in transform_wrapper")
 
     if not isinstance(raw_xml, str):
         raise ValueError(f"Expected XML string but got: {type(raw_xml)}")
 
-    print(f"📥 Raw XML received (preview):\n{raw_xml[:500]}...")
     return transform_data(raw_xml)
 
 
@@ -116,9 +123,9 @@ with DAG(
     schedule_interval=None,
     catchup=False,
     start_date=datetime(2024, 1, 1),
-    concurrency=300,
-    max_active_runs=200,
-    max_active_tasks=300,
+    concurrency=20,
+    max_active_runs=1,
+    max_active_tasks=10,
 ) as dag:
     # Generate chunks for dynamic mapping
     chunks = generate_chunks()
