@@ -21,6 +21,7 @@ default_args = {
     "owner": "airflow",
     "retries": 1,
     "retry_delay":timedelta(minutes=1),
+    "depends_on_past": False,
 }
 current_date = datetime.now()
 next_date = current_date + timedelta(days=1)
