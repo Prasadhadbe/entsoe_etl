@@ -22,7 +22,7 @@ spec:
                 name: airflow-secrets
           volumeMounts:
             - name: dags-volume
-              mountPath: /opt/airflow
+              mountPath: /opt/airflow/dags
       volumes:
         - name: dags-volume
           persistentVolumeClaim:
