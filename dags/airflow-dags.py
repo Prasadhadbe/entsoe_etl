@@ -20,11 +20,11 @@ default_args = {
     "retry_delay":timedelta(minutes=1),
 }
 
-# @task
-# def generate_chunks():
-#     # chunks = get_monthly_chunks("2024-01-01", datetime.today().strftime("%Y-%m-%d")) # prod 
-#     return [{"start_date": "2024-01-01", "end_date": "2024-02-01"}] #(for testing)
-#     # return [{"start_date": c["start_date"], "end_date": c["end_date"]} for c in chunks] # prod
+@task
+def generate_chunks():
+    # chunks = get_monthly_chunks("2024-01-01", datetime.today().strftime("%Y-%m-%d")) # prod 
+    return [{"start_date": "2024-01-01", "end_date": "2024-02-01"}] #(for testing)
+    # return [{"start_date": c["start_date"], "end_date": c["end_date"]} for c in chunks] # prod
 
 @task
 def extract_wrapper(chunk):
@@ -97,7 +97,7 @@ with DAG(
     transformed = transform_daily(raw_data)
     load_daily(transformed)
 
-# Historical Backfill DAG (with UI-configurable dates)
+# Historical Backfill DAG
 with DAG(
     dag_id="day_ahead_prices_historical",
     default_args=default_args,
@@ -107,27 +107,15 @@ with DAG(
     concurrency=20,
     max_active_runs=1,
     max_active_tasks=10,
-    params={  # Default values (can be overridden via UI)
-        "start_date": "2024-01-01",
-        "end_date": datetime.today().strftime("%Y-%m-%d"),
-    },
 ) as dag:
-    @task
-    def generate_chunks(**context):
-        # Get dates from UI params (or use defaults)
-        start_date = context["params"].get("start_date")
-        end_date = context["params"].get("end_date")
-        
-        # Generate chunks dynamically
-        chunks = get_monthly_chunks(start_date, end_date)
-        return [{"start_date": c["start_date"], "end_date": c["end_date"]} for c in chunks]
-        # return [{"start_date": "2024-01-01", "end_date": "2024-02-01"}] #(for testing)
-
+    # Generate chunks for dynamic mapping
     chunks = generate_chunks()
+    # Task flow with explicit names
     extract = extract_wrapper.expand(chunk=chunks)
     transform = transform_wrapper.expand(chunk=chunks, raw_xml=extract)
-    load = load_wrapper.expand(chunk=chunks, data=transform)
+    load = load_wrapper.expand(chunk=chunks, data= transform)
     
     extract >> transform >> load
+
 
 
