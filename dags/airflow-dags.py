@@ -39,8 +39,8 @@ def generate_chunks():
         current_start = current_end
 
     print(f"🔢 Generated {len(chunks)} chunks")
-    # return chunks
-    return [{"start_date": "2024-01-01", "end_date": "2024-01-08"}] #(for testing)
+    return chunks
+    # return [{"start_date": "2024-01-01", "end_date": "2024-01-08"}] #(for testing)
 
 
     # # chunks = get_weekly_chunks("2024-01-01", datetime.today().strftime("%Y-%m-%d")) # prod 
