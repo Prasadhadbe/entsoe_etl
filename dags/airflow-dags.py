@@ -21,7 +21,6 @@ default_args = {
     "owner": "airflow",
     "retries": 1,
     "retry_delay":timedelta(minutes=1),
-    "depends_on_past": False,
 }
 current_date = datetime.now()
 next_date = current_date + timedelta(days=1)
@@ -129,3 +128,6 @@ with DAG(
     load = load_wrapper.expand(chunk=chunks, data= transform)
     
     extract >> transform >> load
+
+
+

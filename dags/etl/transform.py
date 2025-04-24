@@ -1,9 +1,14 @@
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
+import pytz
 
-
-def transform_data(raw_xml, truncate_preview=True):
+def transform_data(raw_xml, target_resolution="PT60M", truncate_preview=True):
     ns = {"ns": "urn:iec62325.351:tc57wg16:451-3:publicationdocument:7:3"}
+
+    # Validate target resolution
+    if target_resolution not in ("PT60M", "PT15M"):
+        print(f"❌ Invalid target resolution: {target_resolution}. Must be PT60M or PT15M")
+        return []
 
     if not raw_xml:
         print("❌ No raw XML provided!")
@@ -21,7 +26,10 @@ def transform_data(raw_xml, truncate_preview=True):
         return []
 
     all_prices = []
-    print("🚀 Starting transformation...")
+    print(f"🚀 Starting transformation (keeping only {target_resolution} data)...")
+
+    # CET timezone (handles DST automatically)
+    cet = pytz.timezone("Europe/Berlin")
 
     for timeseries in root.findall(".//ns:TimeSeries", ns):
         period = timeseries.find("ns:Period", ns)
@@ -29,42 +37,38 @@ def transform_data(raw_xml, truncate_preview=True):
             print("⚠️ Skipping TimeSeries: no Period found")
             continue
 
-        start_elem = period.find("ns:timeInterval/ns:start", ns)
         resolution_elem = period.find("ns:resolution", ns)
+        if resolution_elem is None or resolution_elem.text != target_resolution:
+            continue
 
-        if start_elem is None or resolution_elem is None:
-            print("⚠️ Skipping TimeSeries: missing start/resolution")
+        start_elem = period.find("ns:timeInterval/ns:start", ns)
+        if start_elem is None:
+            print("⚠️ Skipping TimeSeries: missing start time")
             continue
 
         try:
-            base_time = datetime.strptime(start_elem.text, "%Y-%m-%dT%H:%MZ")
-        except ValueError:
-            print(f"⚠️ Invalid start time format: {start_elem.text}")
+            base_time_naive = datetime.strptime(start_elem.text, "%Y-%m-%dT%H:%MZ")
+            # Attach CET timezone and convert to UTC
+            base_time_cet = cet.localize(base_time_naive.replace(tzinfo=None), is_dst=None)
+            base_time_utc = base_time_cet.astimezone(pytz.utc)
+        except Exception as e:
+            print(f"⚠️ Time parsing/conversion error: {e}")
             continue
 
-        resolution = resolution_elem.text
-        if resolution == "PT60M":
-            interval_minutes = 60
-        elif resolution == "PT15M":
-            interval_minutes = 15
-        else:
-            print(f"⚠️ Unsupported resolution: {resolution}")
-            continue
+        interval_minutes = 60 if target_resolution == "PT60M" else 15
 
         for point in period.findall("ns:Point", ns):
             try:
                 pos = int(point.find("ns:position", ns).text)
                 price = float(point.find("ns:price.amount", ns).text)
-                timestamp = base_time + timedelta(minutes=interval_minutes * (pos - 1))
+                timestamp = base_time_utc + timedelta(minutes=interval_minutes * (pos - 1))
                 all_prices.append({
-                    "timestamp": timestamp,
+                    "timestamp": timestamp.isoformat(),
                     "price_eur_per_mwh": price
                 })
             except Exception as e:
                 print(f"⚠️ Skipping point due to error: {e}")
                 continue
 
-    print(f"✅ Transformed {len(all_prices)} price points.")
+    print(f"✅ Transformed {len(all_prices)} {target_resolution} price points.")
     return all_prices
-
-

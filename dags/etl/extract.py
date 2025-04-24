@@ -91,7 +91,6 @@ def extract_data(start_date: Optional[str] = None, end_date: Optional[str] = Non
         if 'ti' in kwargs:
             kwargs['ti'].xcom_push(key='raw_xml', value=xml_response)
 
-        logging.info(f"Successfully extracted {len(xml_response)} bytes of XML data")
         logging.debug(f"XML snippet: {xml_response[:200]}...")
 
         return xml_response
