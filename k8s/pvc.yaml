@@ -9,7 +9,7 @@ spec:
   accessModes:
     - ReadWriteMany
   persistentVolumeReclaimPolicy: Retain
-  storageClassName: azurefile-csi
+  storageClassName: azurefile
   csi:
     driver: file.csi.azure.com
     readOnly: false
@@ -30,7 +30,7 @@ metadata:
 spec:
   accessModes:
     - ReadWriteMany
-  storageClassName: azurefile-csi
+  storageClassName: azurefile
   resources:
     requests:
       storage: 5Gi
