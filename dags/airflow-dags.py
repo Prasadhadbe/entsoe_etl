@@ -19,16 +19,12 @@ default_args = {
     "retries": 1,
     "retry_delay":timedelta(minutes=1),
 }
-current_date = datetime.now()
-next_date = current_date + timedelta(days=1)
-
 
 @task
 def generate_chunks():
-    # return [{"start_date": "2024-01-01", "end_date": "2024-01-08"}] #(for testing)
-    chunks = get_monthly_chunks("2024-01-01", datetime.today().strftime("%Y-%m-%d")) # prod 
-    # return [{"start_date": "2024-01-01", "end_date": "2024-01-08"}] #(for testing)
-    return [{"start_date": c["start_date"], "end_date": c["end_date"]} for c in chunks] # prod
+    # chunks = get_monthly_chunks("2024-01-01", datetime.today().strftime("%Y-%m-%d")) # prod 
+    return [{"start_date": "2024-01-01", "end_date": "2024-02-01"}] #(for testing)
+    # return [{"start_date": c["start_date"], "end_date": c["end_date"]} for c in chunks] # prod
 
 @task
 def extract_wrapper(chunk):
