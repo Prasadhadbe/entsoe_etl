@@ -27,7 +27,7 @@ spec:
               value: "False"
           volumeMounts:
             - name: dags-volume
-              mountPath: /opt/airflow/dags
+              mountPath: /opt/airflow/
       volumes:
         - name: dags-volume
           persistentVolumeClaim:
