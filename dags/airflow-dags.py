@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from etl.extract import extract_data
 from etl.transform import transform_data
 from etl.load import load_to_postgres, load_wrapper
-from util.utils import get_weekly_chunks
+from util.utils import get_monthly_chunks
 from airflow.decorators import task
 from datetime import datetime
 from etl.transform import transform_data 
@@ -26,7 +26,7 @@ next_date = current_date + timedelta(days=1)
 @task
 def generate_chunks():
     # return [{"start_date": "2024-01-01", "end_date": "2024-01-08"}] #(for testing)
-    chunks = get_weekly_chunks("2024-01-01", datetime.today().strftime("%Y-%m-%d")) # prod 
+    chunks = get_monthly_chunks("2024-01-01", datetime.today().strftime("%Y-%m-%d")) # prod 
     # return [{"start_date": "2024-01-01", "end_date": "2024-01-08"}] #(for testing)
     return [{"start_date": c["start_date"], "end_date": c["end_date"]} for c in chunks] # prod
 

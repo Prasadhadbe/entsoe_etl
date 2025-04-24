@@ -20,14 +20,14 @@ def get_api_key() -> str:
         raise ValueError("ENTSOE_API_KEY environment variable not set or empty")
     return api_key
 
-def validate_dates(start: datetime, end: datetime) -> None:
-    """Validate that dates are proper datetime objects and in correct order."""
-    if not isinstance(start, datetime) or not isinstance(end, datetime):
-        raise TypeError("start_date and end_date must be datetime objects")
-    if start > end:
-        raise ValueError("start_date cannot be after end_date")
-    if (end - start) > timedelta(days=7):  # ENTSOE typically has 7-day limit
-        logging.warning("Requesting data for more than 7 days - might hit API limits")
+# def validate_dates(start: datetime, end: datetime) -> None:
+#     """Validate that dates are proper datetime objects and in correct order."""
+#     if not isinstance(start, datetime) or not isinstance(end, datetime):
+#         raise TypeError("start_date and end_date must be datetime objects")
+#     if start > end:
+#         raise ValueError("start_date cannot be after end_date")
+#     if (end - start) > timedelta(days=7):  # ENTSOE typically has 7-day limit
+#         logging.warning("Requesting data for more than 7 days - might hit API limits")
 
 def extract_data(start_date: Optional[str] = None, end_date: Optional[str] = None, resolution: str = "PT60M", **kwargs) -> str:
     """
@@ -55,7 +55,7 @@ def extract_data(start_date: Optional[str] = None, end_date: Optional[str] = Non
         start = datetime.strptime(start_date, "%Y-%m-%d")
         end = datetime.strptime(end_date, "%Y-%m-%d")
 
-        validate_dates(start, end)
+        # validate_dates(start, end)
         api_key = get_api_key()
 
         logging.info(f"Fetching ENTSOE Day-Ahead Prices from {start} to {end}")
