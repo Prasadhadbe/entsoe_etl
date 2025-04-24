@@ -61,7 +61,7 @@ def transform_data(raw_xml, target_resolution="PT60M", truncate_preview=True):
             try:
                 pos = int(point.find("ns:position", ns).text)
                 price = float(point.find("ns:price.amount", ns).text)
-                timestamp = base_time_utc + timedelta(minutes=interval_minutes * (pos - 1))
+                timestamp = base_time_cet + timedelta(minutes=interval_minutes * (pos - 1))
                 all_prices.append({
                     "timestamp": timestamp.isoformat(),
                     "price_eur_per_mwh": price

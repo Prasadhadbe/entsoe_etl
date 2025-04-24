@@ -79,10 +79,10 @@ with DAG(
         )
     
     @task
-    def transform_daily(raw_xml):
+    def transform_daily(raw_xml, resolution="PT60M"):
         if not isinstance(raw_xml, str):
             raise ValueError(f"Expected XML string but got: {type(raw_xml)}")
-        return transform_data(raw_xml)
+        return transform_data(raw_xml, target_resolution=resolution)
     
     @task
     def load_daily(transformed_data):
